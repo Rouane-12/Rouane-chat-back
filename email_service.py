@@ -1,12 +1,13 @@
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-SMTP_HOST = "smtp-relay.brevo.com"
-SMTP_PORT = 587
-SMTP_USER = "97563a001@smtp-brevo.com"
-SMTP_PASSWORD = "xsmtpsib-4477363cec6f1b44502c04a33e107c0e7e81be212dc25127b0a278debd30eb4a-xtKO2TiR5ARg2ctf"
-SENDER_EMAIL = "Mon App <djossouvirouane6@gmail.com>"
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp-relay.brevo.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 
 def send_otp_email(to_email: str, otp_code: str, purpose: str):
     subject = "Code de vérification" if purpose == "register" else "Réinitialisation de mot de passe"
@@ -29,11 +30,11 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str):
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = SENDER_EMAIL
+    msg["From"] = f"Mon App <{SENDER_EMAIL}>"
     msg["To"] = to_email
     msg.attach(MIMEText(body, "html"))
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
-        server.sendmail("djossouvirouane6@gmail.com", to_email, msg.as_string())
+        server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
