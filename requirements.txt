@@ -10,3 +10,4 @@ python-dotenv
 anyio
 aiofiles
 emails
+argon2-cffi
