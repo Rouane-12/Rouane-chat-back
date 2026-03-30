@@ -428,7 +428,7 @@ async def upload_file(file: UploadFile = File(...), receiver: str = Form(...), a
         with open(os.path.join(UPLOAD_DIR, unique_name), "wb") as f:
             f.write(content)
         msg_type = get_message_type(file.filename)
-        file_url = f"http://localhost:8000/uploads/{unique_name}"
+file_url = f"https://rouane-chat-back.onrender.com/uploads/{unique_name}"
         msg = chat_models.Message(
             sender_email=sender_email,
             receiver_email=receiver,
