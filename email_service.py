@@ -1,13 +1,7 @@
-import smtplib
-import ssl
+import requests
 import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp-relay.brevo.com")
-SMTP_PORT = 465
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 
 def send_otp_email(to_email: str, otp_code: str, purpose: str):
@@ -29,14 +23,19 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str):
     </html>
     """
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"Mon App <{SENDER_EMAIL}>"
-    msg["To"] = to_email
-    msg.attach(MIMEText(body, "html"))
+    response = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json"
+        },
+        json={
+            "sender": {"name": "Mon App", "email": SENDER_EMAIL},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": body
+        }
+    )
 
-    # SSL direct sur port 465
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
-        server.login(SMTP_USER, SMTP_PASSWORD)
-        server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
+    if response.status_code not in [200, 201]:
+        raise Exception(f"Brevo API error: {response.text}")
