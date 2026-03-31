@@ -411,6 +411,37 @@ async def delete_message(message_id: int, authorization: str = Header(...), db: 
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class SendMessageSchema(BaseModel):
+    to: str
+    content: str
+
+@app.post("/send-message")
+def send_message_http(data: SendMessageSchema, authorization: str = Header(...), db: Session = Depends(get_db)):
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = decode_token(token)
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Token invalide")
+        msg = chat_models.Message(
+            sender_email=email,
+            receiver_email=data.to,
+            content=data.content,
+            message_type="text",
+            created_at=datetime.utcnow()
+        )
+        db.add(msg)
+        db.commit()
+        db.refresh(msg)
+        return serialize_message(msg)
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token invalide ou expiré")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...), receiver: str = Form(...), authorization: str = Header(...)):
     db = SessionLocal()
