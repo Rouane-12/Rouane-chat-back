@@ -11,3 +11,5 @@ anyio
 aiofiles
 emails
 argon2-cffi
+psycopg2-binary
+psycopg2
