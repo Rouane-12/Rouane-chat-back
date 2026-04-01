@@ -25,4 +25,4 @@ def decode_token(token: str):
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 def generate_otp():
-    return "".join(random.choices(string.digits, k=6))
+    return "".join(random.choices(string.digits, k=6)) 
