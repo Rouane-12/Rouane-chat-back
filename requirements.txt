@@ -11,4 +11,4 @@ anyio
 aiofiles
 emails
 argon2-cffi
-
+psycopg2
