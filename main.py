@@ -394,6 +394,23 @@ def search_users(q: str = "", current_email: str = Depends(get_current_email), d
     return results
 
 
+@app.get("/users")
+def get_users(current_email: str = Depends(get_current_email), db: Session = Depends(get_db)):
+    users = db.query(models.User).filter(
+        models.User.email != current_email,
+        models.User.is_verified == True
+    ).all()
+
+    return [
+        {
+            "email": u.email,
+            "display_name": u.display_name,
+            "avatar_url": u.avatar_url,
+        }
+        for u in users
+    ]
+
+
 @app.get("/friends")
 def get_friends(current_email: str = Depends(get_current_email), db: Session = Depends(get_db)):
     online = manager.get_online()
