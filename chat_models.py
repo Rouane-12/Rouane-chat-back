@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 from datetime import datetime
 from database import Base
 
@@ -8,9 +8,10 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sender_email = Column(String, index=True)
-    receiver_email = Column(String, index=True)
-    content = Column(String, nullable=True)
-    message_type = Column(String, default="text")
+    receiver_email = Column(String, nullable=True, index=True)   
+    group_id = Column(Integer, nullable=True, index=True)         
+    content = Column(Text, nullable=True)
+    message_type = Column(String, default="text")  
     file_url = Column(String, nullable=True)
     file_name = Column(String, nullable=True)
     file_size = Column(Integer, nullable=True)
