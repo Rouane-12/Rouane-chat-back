@@ -435,7 +435,33 @@ def get_friends(current_email: str = Depends(get_current_email), db: Session = D
     return result
 
 
-# ─── friend request routes ────────────────────────────────────────────────────
+class GroupMessageSchema(BaseModel):
+    content: str
+
+@app.post("/groups/{group_id}/messages")
+async def send_group_message(group_id: int, data: GroupMessageSchema, current_email: str = Depends(get_current_email), db: Session = Depends(get_db)):
+    member = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.email == current_email
+    ).first()
+    if not member:
+        raise HTTPException(status_code=403, detail="Non membre de ce groupe")
+    msg = chat_models.Message(
+        sender_email=current_email,
+        group_id=group_id,
+        content=data.content,
+        message_type="text",
+        created_at=datetime.utcnow()
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    packet = {"type": "message", **serialize_message(msg)}
+    members = db.query(models.GroupMember).filter(models.GroupMember.group_id == group_id).all()
+    for m in members:
+        await manager.send_to(m.email, packet)
+    return serialize_message(msg)
+
 
 @app.post("/friend-request")
 async def send_friend_request(data: FriendRequestSchema, current_email: str = Depends(get_current_email), db: Session = Depends(get_db)):
